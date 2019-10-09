@@ -14,7 +14,6 @@ func Hello(word string) string {
 	return helloPrefix + word
 }
 
-
 func main()  {
 	fmt.Println(Hello("world"))
 }
