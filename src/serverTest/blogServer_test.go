@@ -1,4 +1,4 @@
-package serverTest
+package servertest
 
 import (
 	"testing"
@@ -29,7 +29,33 @@ func TestServer(t *testing.T)  {
 		server.ServeHTTP(response, request)
 		assertResponseBody(t, response.Body.String(), "10")
 	})
+
+	t.Run("returns 404 on missing players", func(t *testing.T) {
+		request := newGetScoreRequest("Apollo")
+		response := httptest.NewRecorder()
+	
+		server.ServeHTTP(response, request)
+	
+		got := response.Code
+		want := http.StatusNotFound
+		if got != want {
+			t.Errorf("got status %d want %d", got, want)
+		}
+	})
 }
+
+func newGetScoreRequest(name string) *http.Request {
+    req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/players/%s", name), nil)
+    return req
+}
+
+func assertStatus(t *testing.T, got, want int) {
+    t.Helper()
+    if got != want {
+        t.Errorf("did not get correct status, got %d, want %d", got, want)
+    }
+}
+
 
 func assertResponseBody(t *testing.T, got, want string) {
     t.Helper()
@@ -37,21 +63,6 @@ func assertResponseBody(t *testing.T, got, want string) {
         t.Errorf("response body is wrong, got '%s' want '%s'", got, want)
     }
 }
-
-// // 争取不直接修改struct本身
-// func GetPlayerScore(name string) string {
-//     if name == "Pepper" {
-//         return "20"
-//     }
-
-//     if name == "Floyd" {
-//         return "10"
-//     }
-
-//     return ""
-// }
-
-
 
 type StubPlayerStore struct {
     scores map[string]int
@@ -61,3 +72,20 @@ func (s *StubPlayerStore) GetPlayerScore(name string) int {
     score := s.scores[name]
     return score
 }
+
+
+type PlayerServer struct {
+    store PlayerStore
+}
+
+func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    player := r.URL.Path[len("/players/"):]
+    score := p.store.GetPlayerScore(player)
+
+    if score == 0 {
+        w.WriteHeader(http.StatusNotFound)
+    }
+
+    fmt.Fprint(w, score)
+}
+
