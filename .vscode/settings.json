@@ -1,0 +1,7 @@
+{
+    "go.useLanguageServer": true,
+    "go.alternateTools": {
+        "go-langserver": "gopls"
+    },
+    "go.languageServerFlags": ["-rpc.trace"]
+}

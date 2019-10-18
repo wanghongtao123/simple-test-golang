@@ -9,6 +9,7 @@ import (
 
 type User struct {
 	gorm.Model
-	Name string `gorm:"size:10"`
+	Name  string `gorm:"size:10"`
 	State bool
 }
+
