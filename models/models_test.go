@@ -16,7 +16,7 @@ func TestModels(t *testing.T){
 	defer db.Close()
 
 	t.Run("testing user CRUD", func(t *testing.T) {
-		db.AutoMigrate(&User{}) // 数据库中表单和模型同步
+		db.AutoMigrate(&User{}, &MarkDown{}) // 数据库中表单和模型同步
 		user := User{
 			Name: "test",
 			State: false,
@@ -36,5 +36,14 @@ func TestModels(t *testing.T){
 		// fmt.Println(first_user)
 		// db.Delete(&product)
 		
+	})
+}
+
+func TestStruct(t *testing.T) {
+	t.Run("testing struct source and value", func(t *testing.T) {
+		var u User
+		u.Name = "123132"
+		var u_p *User = &u
+		fmt.Println(u, u_p)
 	})
 }
