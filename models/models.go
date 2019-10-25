@@ -22,25 +22,28 @@ func (u *User) CreateUser(db *gorm.DB) {
 	}
 }
 
-
-func (u *User) ReadUser(db *gorm.DB) {
-	
+func (u *User) QueryUser(db *gorm.DB) {
+	if u.ID != uint(0) {
+		db.Where("ID = ?",  u.ID).Find(&u)
+	}
+	// 返回未找到数据
 }
 
-
 func (u *User) UpdateUser(db *gorm.DB) {
-	
+	// 找到用户
+	// 更改
 }
 
 func (u *User) DeleteUser(db *gorm.DB) {
-	
+	// 找到用户
+	// 软删除
 }
 
 type MarkDown struct {
 	gorm.Model
-	Name  string `gorm:"size:10"`
-	User  User `gorm:"foreignkey:UserRefer"` // 使用 UserRefer 作为外键
-  	UserRefer uint
+	Name      string `gorm:"size:10"`
+	User      User   `gorm:"foreignkey:UserRefer"` // 使用 UserRefer 作为外键
+	UserRefer uint
 }
 
 
