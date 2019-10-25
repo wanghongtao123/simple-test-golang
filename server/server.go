@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -17,7 +18,6 @@ func main() {
 			"message": "pong",
 		})
 	})
-
 
 	s := &http.Server{
 		Addr:           ":8080",
