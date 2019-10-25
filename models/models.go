@@ -24,7 +24,9 @@ func (u *User) CreateUser(db *gorm.DB) {
 
 
 func (u *User) ReadUser(db *gorm.DB) {
-	
+	if u.ID == 0 {
+
+	}
 }
 
 
