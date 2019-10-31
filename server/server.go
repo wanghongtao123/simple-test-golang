@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/gin-gonic/gin"
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 var secrets = gin.H{
@@ -51,18 +52,40 @@ func Cors() gin.HandlerFunc {
     }
 }
 
+func login(c *gin.Context)  {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	
+	if username == "wang" && password == "123"{
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"user": "wang",
+			"nbf": time.Now().Unix(),
+			"exp":  
+		})
+		// Sign and get the complete encoded token as a string using the secret
+		tokenString, err := token.SignedString([] byte("s"))
+		if err != nil {
+			// return err
+		}
 
+		c.JSON(200, gin.H{
+			"token": tokenString,
+		})
+	}
+	c.JSON(401, gin.H{
+		"error": "error",
+	})
+}
 
-func main() {
+func main( ) {
 	// 获得当前gin框架引擎，对外主要是router
 	engine := gin.Default()
+	fmt.Println()
 	engine.Use(Cors())
 	//  完成各项功能的router注册
 
-	engine.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+	engine.POST("/ping", func(c *gin.Context) {
+		login(c)
 	})
 
 	engine.GET("/json", func(c *gin.Context) {
