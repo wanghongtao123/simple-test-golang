@@ -15,13 +15,13 @@ var secrets = gin.H{
 	"lena":   gin.H{"email": "lena@guapa.com", "phone": "523443"},
 }
 
-// 跨域
+//Cors 解决跨域问题
 func Cors() gin.HandlerFunc {
     return func(c *gin.Context) {
         method := c.Request.Method      //请求方法
         origin := c.Request.Header.Get("Origin")        //请求头部
         var headerKeys []string                             // 声明请求头keys
-        for k, _ := range c.Request.Header {
+        for k := range c.Request.Header {
             headerKeys = append(headerKeys, k)
         }
         headerStr := strings.Join(headerKeys, ", ")
@@ -52,36 +52,84 @@ func Cors() gin.HandlerFunc {
     }
 }
 
+
+
 func login(c *gin.Context)  {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	
+	now := time.Now()   
+	ad, _ := time.ParseDuration("8h")
+
+	// claims := &jwt.StandardClaims{
+	// 	ExpiresAt: 15000,
+	// 	Issuer:    "test",
+	// }
+
 	if username == "wang" && password == "123"{
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"user": "wang",
-			"nbf": time.Now().Unix(),
-			"exp":  
+			"nbf": now.Unix(),
+			"exp":  now.Add(ad).Unix(),
 		})
 		// Sign and get the complete encoded token as a string using the secret
-		tokenString, err := token.SignedString([] byte("s"))
+		tokenString, err := token.SignedString([] byte("sercert"))
 		if err != nil {
 			// return err
 		}
 
 		c.JSON(200, gin.H{
 			"token": tokenString,
-		})
+		}) 
 	}
 	c.JSON(401, gin.H{
 		"error": "error",
 	})
 }
+    
+func check(tokenString string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+	
+		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+		return []byte("sercert"), nil
+	})
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims , nil
+	}
+	return nil, err
+}
+
+// CheckToken 检查消息头中的token是否或过期， 如果是则返回login界面
+func CheckToken() gin.HandlerFunc {
+	return func (c *gin.Context)  {
+		token := c.Request.Header.Get("token") 
+		claims, err := check(token)
+		if err != nil {
+			c.JSON(401, gin.H{"error": "错误的token"})
+		} else {
+			// 判断是否在正常时间相应中
+			var exp int64 = claims["exp"].(int64)
+			if exp < time.Now().Unix() {
+				c.JSON(401, gin.H{"error": "验证时间以过请重新登录"})
+			}
+			c.Next()
+		}
+	}
+}
+
+
+
 
 func main( ) {
 	// 获得当前gin框架引擎，对外主要是router
 	engine := gin.Default()
 	fmt.Println()
-	engine.Use(Cors())
+	engine.Use(Cors(), CheckToken())
 	//  完成各项功能的router注册
 
 	engine.POST("/ping", func(c *gin.Context) {
