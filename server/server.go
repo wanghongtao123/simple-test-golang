@@ -52,8 +52,6 @@ func Cors() gin.HandlerFunc {
     }
 }
 
-
-
 func login(c *gin.Context)  {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -122,9 +120,7 @@ func CheckToken() gin.HandlerFunc {
 	}
 }
 
-
-
-
+//
 func main( ) {
 	// 获得当前gin框架引擎，对外主要是router
 	engine := gin.Default()
